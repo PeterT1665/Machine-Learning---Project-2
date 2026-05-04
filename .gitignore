@@ -1,0 +1,27 @@
+# Data directories (too large for git — keep locally)
+task1_data/
+task2_data/
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+
+# Jupyter
+.jupyter/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Model outputs / checkpoints
+*.pkl
+*.joblib
+*.h5
+*.pt
+*.pth
