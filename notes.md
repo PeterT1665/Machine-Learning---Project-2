@@ -280,9 +280,11 @@ Steps:
 
 ---
 
-## Phase 7 — Full Report Outline (both tasks, 2,500–3,000 words)
+## Phase 7 — Report Outline & Drafted Text (2,500–3,000 words)
 
-> Bullet-point guide only — write in your own words. All numbers below are your actual results from the notebooks. Word counts are targets, not hard limits. Write this AFTER you have all results from both tasks.
+> **Legend:** ✏️ Person A (Task 1 owner) | 📝 Person B (Task 2 owner) | 🤝 Both together
+> Word counts exclude references, figure captions, and tables (per spec).
+> **Writing order:** Run both notebooks → A writes §2–§4 Task 1 parts → B writes §2–§4 Task 2 parts → Both write §4D, §1, §5 last.
 
 ---
 
@@ -367,160 +369,117 @@ Note: Kaggle test accuracy (90%) is higher than CV accuracy (86.8%) because the 
 
 ---
 
-### Section 1 — Introduction (~250 words, write this LAST)
+---
 
-**Task description (~100 words):**
-- Task 1: classify 10 animal categories (bird, butterfly, cat, deer, dog, elephant, frog, horse, sheep, spider) — 3,750 training images, 64×64 px, from CIFAR-10 and public datasets (cite: Krizhevsky, 2009)
-- Task 2: classify 10 bird species from CUB-200-2011 (cite: Wah et al., 2011) — 417 training images, 128×128 px
-- The coarse-to-fine theme: Task 1 classes are visually distinct; Task 2 classes share the same body plan and differ only in subtle details
+## Report Outline — Paragraph by Paragraph
 
-**Why it matters (~50 words):**
-- Fine-grained recognition is significantly harder — standard features that work for coarse tasks fail here
-- This mirrors real-world challenges in medical imaging, wildlife monitoring, and product identification
-
-**Your approach (~100 words):**
-- Both tasks: used three provided feature sets (colour histogram, HOG-PCA, additional stats) plus engineered ResNet-50 deep features
-- Task 1: evaluated ZeroR, kNN, SVM (RBF and linear), then ResNet-50 → best was Logistic Regression on ResNet (90.0% CV)
-- Task 2: evaluated baseline, kNN, SVM, Random Forest, ensemble → best was soft-voting ensemble on ResNet (86.8% CV, 90.0% Kaggle)
-- State these are the results; the report explores why
+**Target: ~2,650 words** (excludes references, figure captions, tables)
+**Legend:** ✏️ Person A writes | 📝 Person B writes | 🤝 Both together
+**Writing order:** Both notebooks done → A drafts §2–§4 Task 1 parts → B drafts §2–§4 Task 2 parts → Both write §4D, §1, §5 last
 
 ---
 
-### Section 2 — Methodology (~650 words total)
+### §1 Introduction — 240 words — 🤝 Both (write LAST)
 
-**2.1 — Features (~200 words, covers both tasks)**
-- Three feature sets were provided for both tasks:
-  - Colour histogram: 96 dims — bins pixel intensities across R, G, B channels; captures colour distribution but not spatial location
-  - HOG-PCA: 100 dims — gradient-based features capturing edge direction and shape structure, reduced by PCA
-  - Additional stats: 23 dims — edge density, texture variance, average colour per channel
-  - Total: 219 provided dimensions per image
-- All three concatenated into one matrix (feat_basic)
-- StandardScaler applied (zero mean, unit variance) before SVM and kNN — distance-based models require this
-- Additional engineered features (Task 1): mean and standard deviation per RGB channel extracted from raw pixels → 12 extra features → 231-dim feat_combined
-- ResNet-50 used as a deep feature extractor for both tasks:
-  - Pretrained on ImageNet (1.28M images, 1,000 categories) — cite He et al., 2016
-  - Final classification layer removed; each image passed through → 2,048-dim feature vector
-  - Images resized to 224×224, normalised with ImageNet mean/std before extraction
-  - Allowed because ResNet was not trained on CIFAR-10 or CUB-200-2011
-  - Motivation: PCA on provided features retains only 19.9% (Task 1) and 17.0% (Task 2) of variance in 2D — poor class separability
-
-**2.2 — Models (~250 words, covers both tasks)**
-
-Write one short paragraph per model. Mention which tasks each was used for.
-
-- **ZeroR (Task 1 only):** always predicts the most frequent class regardless of input — 10% accuracy; serves as the floor every real model must beat
-- **kNN:** classifies by majority vote among the k nearest training points in feature space; k tested over {1, 5, 11, 21} for Task 1 and {3, 5, 7, 11} for Task 2; sensitive to feature scale so StandardScaler applied first
-- **SVM with RBF kernel:** finds the maximum-margin hyperplane between classes; C controls regularisation strength, γ controls influence radius per training point; both tuned by grid search; used on feat_basic, feat_combined, and ResNet features
-- **SVM with Linear kernel (Task 1 only):** straight-line decision boundary; compared against RBF to understand whether non-linearity helps
-- **Random Forest (Task 1 and 2):** ensemble of 300/200 decision trees trained on random feature subsets; votes averaged; no scaling needed; robust to irrelevant features
-- **Logistic Regression (Task 1 only):** linear model with probability output; particularly effective on high-dimensional ResNet features
-- **Soft-voting Ensemble (Task 2):** combines SVM + kNN + RF by averaging their predicted class probabilities; required for groups of 2
-
-**2.3 — Evaluation (~100 words)**
-- Stratified 5-fold cross-validation on the labelled training set for all models
-- Stratified = each fold preserves class proportions — critical for Task 2 with only ~42 images per class
-- Primary metric: classification accuracy (matches Kaggle scoring)
-- Final model retrained on the full training set before generating test predictions
-- Kaggle competitions used as external validation on held-out test data
+| Para | Content | Words | Who |
+|------|---------|-------|-----|
+| P1 | Task description: Task 1 = 10 coarse animal categories (3,750 train, 64×64, CIFAR-10 + public); Task 2 = 10 fine-grained bird species from CUB-200-2011 (417 train, 128×128). Establish the coarse-to-fine theme: classification difficulty grows dramatically as classes become visually similar. | ~100 | 🤝 |
+| P2 | Why it matters: fine-grained recognition underpins wildlife monitoring, medical imaging. State that both tasks revealed this challenge concretely. | ~60 | 🤝 |
+| P3 | Approach summary: provided features + ResNet-50 for both tasks. Task 1 best: Logistic Regression on ResNet (90.0% CV). Task 2 best: soft-voting ensemble on ResNet (86.8% CV, 90.0% Kaggle). Report analyses why. | ~80 | 🤝 |
 
 ---
 
-### Section 3 — Results (~400 words total)
+### §2 Methodology — 680 words
 
-**3.1 — Task 1 results (~200 words)**
+#### 2.1 Features — 220 words
 
-Include results table:
+| Para | Content | Words | Who |
+|------|---------|-------|-----|
+| P4 | Provided features (both tasks): colour histogram 96-dim, HOG-PCA 100-dim, additional stats 23-dim → 219 total. Concatenated into one matrix. StandardScaler fit on train only. | ~85 | ✏️ A |
+| P5 | Engineered features Task 1 only: mean + std per RGB channel from raw pixels → 12 extra → 231-dim combined. Why: supplements colour histogram with brightness/contrast variation. | ~55 | ✏️ A |
+| P6 | ResNet-50 extraction (both tasks): final layer removed, images 224×224 + ImageNet normalisation → 2,048-dim vector. Saved to CSV. Allowed (not trained on CIFAR-10/CUB). Motivation: PCA on provided retains only 19.9% (T1) and 17.0% (T2) variance in 2D. | ~80 | 📝 B |
 
-| Model | Features | CV Accuracy |
-|-------|----------|-------------|
-| ZeroR | — | 10.0% ± 0.0% |
-| kNN (k=11) | feat_combined | 26.9% ± 1.7% |
-| SVM Linear (C=1) | feat_combined | 49.5% ± 1.3% |
-| SVM RBF (C=10) | feat_combined | 52.5% ± 2.4% |
-| SVM RBF (C=10) | ResNet-50 | 87.0% ± 1.3% |
-| Random Forest (300 trees) | ResNet-50 | 86.7% ± 1.3% |
-| **Logistic Regression** | **ResNet-50** | **90.0% ± 1.7%** |
+#### 2.2 Models — 360 words
 
-- Reference the table in text
-- Best provided-features model: SVM RBF (52.5%)
-- Best overall: Logistic Regression on ResNet (90.0% CV)
-- Kaggle test accuracy: [fill in from Kaggle after your teammate submits]
-- Include confusion matrix as a figure — caption it, reference it in text
-- Note the most confused pairs from the confusion matrix: dog↔cat (88+79 times), deer→bird (73 times), spider↔butterfly (58 times), sheep↔elephant (58 times)
+| Para | Content | Words | Who |
+|------|---------|-------|-----|
+| P7 | **ZeroR** (Task 1): predicts most frequent class → 10.0% ± 0.0%. Establishes the floor. | ~35 | ✏️ A |
+| P8 | **kNN** (both): majority vote among k nearest; StandardScaler required. Task 1: k ∈ {1,5,11,21}, best k=11 on combined features. Task 2: k ∈ {3,5,7,11}, best k=7 on ResNet. | ~55 | ✏️ A drafts T1 half · 📝 B adds T2 half · merge |
+| P9 | **SVM RBF** (both): maximum-margin hyperplane with RBF kernel; C and γ tuned by GridSearchCV; best C=10 for both tasks. | ~65 | ✏️ A drafts · 📝 B confirms T2 γ detail |
+| P10 | **SVM Linear** (Task 1 only): C=1; compared against RBF to test whether non-linearity is needed. Counts as a distinct model under the spec. | ~45 | ✏️ A |
+| P11 | **Random Forest** (both): bootstrap-sampled trees, random feature splits, majority vote; no scaling needed. 300 trees (T1), 200 trees (T2). | ~50 | ✏️ A drafts · 📝 B confirms T2 count |
+| P12 | **Logistic Regression** (Task 1 only): linear probabilistic classifier; best on ResNet features because the deep extractor already handles non-linearity. | ~50 | ✏️ A |
+| P13 | **Soft-voting Ensemble** (Task 2, required): VotingClassifier(SVM + kNN + RF); averages class probability vectors; confident predictions get more weight than hard voting. | ~60 | 📝 B |
 
-**3.2 — Task 2 results (~200 words)**
+#### 2.3 Evaluation — 100 words — 🤝 Both
 
-Include results table (from results reference above).
-
-- Reference the table in text
-- Best model: ensemble on ResNet (86.8% CV), 90.0% Kaggle
-- Compare to baseline (9.6%) to show how much was gained
-- Note: Kaggle score (90%) > CV score (86.8%) — because final model uses all 417 images
-- Include Task 2 confusion matrix as a figure — reference it
-- Point out the most confused pairs from the matrix
+| Para | Content | Words | Who |
+|------|---------|-------|-----|
+| P14 | Stratified 5-fold CV (stratified = preserves class proportions, critical for Task 2's ~42/class). Metric: classification accuracy. Confusion matrices via cross-validated predictions. Final model retrained on full training set before Kaggle submission. | ~100 | 🤝 |
 
 ---
 
-### Section 4 — Discussion (~900 words total, most important section)
+### §3 Results — 400 words
 
-**A — Why provided features worked for Task 1 but failed for Task 2 (~200 words)**
-- Task 1 with provided features: SVM achieved 52.5% — well above baseline (10%) and above the 50% Kaggle threshold
-- Task 2 with provided features: would be near-random — 102/219 features are near-zero variance, PCA retains only 17% in 2D
-- Why features work for Task 1: animal categories are visually distinct — a frog and a horse have completely different colours, shapes, and textures; colour histograms alone give strong signal
-- Why they fail for Task 2: all 10 birds are similar in colour range (browns, greys, yellows, whites) and share the same body shape; the discriminating information is in fine local details like bill banding or breast spots
-- Theoretical link: this is a bias problem, not a variance problem — even a perfect classifier cannot separate the classes if the features don't carry the right information
-- Evidence: switching to ResNet features in Task 1 jumped SVM from 52.5% → 87.0%, and in Task 2 from near-random → 85.1%
+#### 3.1 Task 1 — 200 words — ✏️ Person A
 
-**B — Model comparison across both tasks (~200 words)**
-- Task 1: kNN performed poorly even at best k=11 (26.9%) — with 219 provided features, the distance metric is noisy (curse of dimensionality); many irrelevant features dilute the signal
-- Task 1: SVM RBF beat SVM Linear (52.5% vs 49.5%) → non-linear decision boundaries matter even for coarse classes; some animal pairs (cat/dog, bird/butterfly) overlap in feature space
-- Task 1 with ResNet: Logistic Regression (90.0%) beat SVM RBF (87.0%) — in 2048-dim ResNet space, a linear classifier suffices because ResNet already learned non-linear transformations; adding more non-linearity (RBF kernel) gives no benefit and may slightly overfit
-- Task 2: kNN improved dramatically on ResNet (81.3%) vs provided features — ResNet embeddings make the nearest-neighbour measure meaningful; similar species produce similar 2048-dim vectors
-- Task 2: RF (86.1%) was competitive with SVM (85.1%) — both work well on ResNet features
-- Task 2: ensemble (86.8%) improved slightly — each model errors differently, soft voting averages out some mistakes
-- Key finding: model choice mattered less than feature choice in both tasks
+| Para | Content | Words | Who |
+|------|---------|-------|-----|
+| P15 | Narrative for **Table 1**: ZeroR 10.0%, kNN 26.9%, SVM Linear 49.5%, SVM RBF 52.5% (best on provided features). ResNet step-change: SVM 87.0%, RF 86.7%, LR 90.0% (best overall). Kaggle test: [FILL IN]. | ~110 | ✏️ A |
+| P16 | Narrative for **Figure 1** (confusion matrix, SVM RBF on provided features): dog↔cat 167 errors, deer→bird 73, spider↔butterfly 58, sheep↔elephant 58. Best: butterfly 64.0%, horse 61.6%. Worst: cat 36.8%, dog 40.8%. | ~100 | ✏️ A |
 
-**C — Error analysis (~250 words)**
+#### 3.2 Task 2 — 200 words — 📝 Person B
 
-Task 1 errors:
-- Most confused pair: dog↔cat (88+79 times) — both quadrupeds with similar fur textures and body shapes; colour histograms cannot distinguish them
-- Second worst: deer→bird (73 times) — deer images likely had backgrounds (sky, trees) that matched the colour profile of bird images; HOG features probably captured similar elongated shapes
-- spider↔butterfly (58 times) — both have thin legs and detailed textures; at 64×64 the fine structure is lost
-- sheep↔elephant (58 times) — both are large grey/white animals; similar colour distributions
-- Best-classified: butterfly (64.0%), horse (61.6%) — distinctive shapes and colour patterns survive feature extraction even at coarse scale
-- Worst-classified: cat (36.8%), dog (40.8%) — inter-class similarity is the bottleneck
-
-Task 2 errors (read your confusion matrix for the specific numbers):
-- Expected worst pairs: Herring Gull / Ring-Billed Gull — identical grey/white colouring; only difference is a narrow bill ring invisible at 128×128
-- House Sparrow / Song Sparrow — both small brown streaked birds; Song Sparrow's breast spot is subtle and pose-dependent
-- Yellow Warbler / Wilson Warbler — both yellow; Wilson's black cap IS distinctive, so confusion should be lower
-- Well-classified: Cardinal (all-red, unique), American Goldfinch (bright yellow + black wings)
-- The pattern: all major errors occur between visually similar pairs — errors are not random, they are predictable from visual inspection
-
-**D — Coarse-to-fine reflection (~150 words)**
-- The central lesson: as inter-class similarity increases, the feature representation becomes the bottleneck — not the model
-- In Task 1, switching models (kNN → SVM) gained ~26 percentage points on provided features. In Task 2, switching models gained only ~5 points (kNN to ensemble on ResNet)
-- In both tasks, switching from provided features to ResNet gained ~35–40 percentage points — far more than any model change
-- Two compounding difficulties in Task 2: (1) 10× fewer training images, (2) 10× higher visual similarity between classes
-- Theoretical link — bias vs variance: provided features have high representational bias for fine-grained tasks; ResNet reduces this bias. With fewer images, simpler models (Logistic Regression, SVM) control variance better than complex ones
-- Real-world implication: for any fine-grained recognition task, invest in features first, then tune models
+| Para | Content | Words | Who |
+|------|---------|-------|-----|
+| P17 | Narrative for **Table 2**: baseline 9.6%, kNN 81.3%, SVM 85.1%, RF 86.1%, ensemble 86.8% (best CV). Kaggle 90.0% > CV because final model uses all 417 images. | ~100 | 📝 B |
+| P18 | Narrative for **Figure 2** (Task 2 confusion matrix): name the most confused pairs from your actual matrix; note best-classified (Cardinal, Goldfinch) and explain why. | ~100 | 📝 B |
 
 ---
 
-### Section 5 — Conclusion (~200 words, write LAST)
+### §4 Discussion and Critical Analysis — 1,000 words — most important section
 
-- One paragraph — summarise both tasks together, do not repeat results in detail
-- Cover these points:
-  - Both tasks: provided features were reasonable for Task 1 (52.5%), insufficient for Task 2
-  - ResNet-50 transfer features dramatically improved both tasks (Task 1: 90.0%, Task 2: 90.0% Kaggle)
-  - The progression from coarse to fine-grained revealed that feature quality is the dominant factor when classes become visually similar
-  - Model diversity helped modestly in Task 2 (ensemble vs single model)
-  - Future work: fine-tuning ResNet on the target dataset with data augmentation would likely push Task 2 beyond 90%; a stronger backbone (EfficientNet, ViT) may help further
-  - Broader takeaway: fine-grained recognition is an open problem — even state-of-the-art models struggle with within-species variation and small training sets
+#### 4A — Why provided features worked for Task 1 but not Task 2 — 200 words
+
+| Para | Content | Words | Who |
+|------|---------|-------|-----|
+| P19 | Task 1: SVM RBF 52.5% — adequate because the 10 animal categories are visually heterogeneous; colour histograms + HOG capture the separating information. | ~90 | ✏️ A |
+| P20 | Task 2: 102/219 features near-zero variance, PCA retains only 17% in 2D. All 10 birds share body plan; discriminating details (bill banding, breast spots) are invisible to colour histograms and HOG. Theoretical frame: representational bias — even an optimal classifier fails if features don't carry the required information. Evidence: ResNet jump SVM T1 52.5→87%, T2 near-random→85.1%. | ~110 | 📝 B |
+
+#### 4B — Model comparison across both tasks — 220 words
+
+| Para | Content | Words | Who |
+|------|---------|-------|-----|
+| P21 | Task 1: kNN poor (26.9%) vs SVM (52.5%) — curse of dimensionality in 231-dim space. SVM RBF > Linear (52.5% vs 49.5%) — some class boundaries (dog/cat, spider/butterfly) are non-linear. | ~75 | ✏️ A |
+| P22 | Task 1 on ResNet: LR (90.0%) > SVM RBF (87.0%) — ResNet already learned non-linearities; a linear classifier in 2,048-dim space is sufficient and avoids overfitting. | ~70 | ✏️ A |
+| P23 | Task 2: kNN recovered dramatically on ResNet (81.3%) — embeddings make distance meaningful. RF (86.1%) ≈ SVM (85.1%); ensemble (86.8%) adds marginal gain. Key finding: feature switch gained 35–40pp in both tasks; model switch gained at most 5pp — features dominate. | ~75 | 📝 B |
+
+#### 4C — Error analysis — 280 words
+
+| Para | Content | Words | Who |
+|------|---------|-------|-----|
+| P24 | Task 1 errors: dog↔cat 167 errors (similar fur colour + shape), deer→bird 73 (background overlap), spider↔butterfly 58 (fine textures lost at 64×64), sheep↔elephant 58 (grey/white colour region). Best: butterfly, horse, elephant — distinctive enough for provided features. | ~130 | ✏️ A |
+| P25 | Task 2 errors: describe actual matrix results. Expected worst: Herring Gull ↔ Ring-Billed Gull (bill band invisible at 128×128), House Sparrow ↔ Song Sparrow (subtle breast spot). Wilson Warbler confusion should be lower (black cap distinctive). Pattern: all errors predictable from visual inspection → confirms feature bottleneck not model bottleneck. | ~150 | 📝 B |
+
+#### 4D — Coarse-to-fine reflection + theory — 300 words — 🤝 Both
+
+| Para | Content | Words | Who |
+|------|---------|-------|-----|
+| P26 | Two compounding difficulties in Task 2: 10× fewer images AND 10× higher visual similarity. Switching models gained ~26pp (T1, provided features), only ~5.5pp (T2, ResNet). Switching features gained 35–40pp in both tasks. Features dominate. | ~100 | 🤝 |
+| P27 | Bias-variance connection: provided features have high representational bias for fine-grained tasks — more data or more complex models cannot fix it. ResNet reduces bias. With ~42 images/class, variance is the secondary concern — simpler models (SVM, LR) outperform complex ones. Transfer learning as a frozen extractor avoids updating 25M parameters on 417 images. | ~130 | 🤝 |
+| P28 | Real-world implication: before choosing a model, ask whether the features are *capable* of encoding the discriminating information. The 38.5pp gap between provided features and ResNet on Task 2 makes this concrete. | ~70 | 🤝 |
 
 ---
 
-### Section 6 — References
+### §5 Conclusion — 180 words — 🤝 Both (write LAST)
+
+| Para | Content | Words | Who |
+|------|---------|-------|-----|
+| P29 | Provided features adequate for T1 (52.5%), insufficient for T2. ResNet-50 produced the largest single improvement in both tasks (T1 LR: 90.0%, T2 ensemble: 90.0% Kaggle). Coarse-to-fine progression confirmed feature representational capacity as the dominant factor. Future work: fine-tuning ResNet with data augmentation, or stronger backbones (EfficientNet-B4, ViT-B/16), could push Task 2 further. | ~180 | 🤝 |
+
+---
+
+### §6 References — 🤝 Both
 
 - Krizhevsky, A. (2009). Learning Multiple Layers of Features from Tiny Images. *Technical Report*.
 - Wah, C., et al. (2011). The Caltech-UCSD Birds-200-2011 Dataset. *CNS-TR-2011-001*.
@@ -530,27 +489,27 @@ Task 2 errors (read your confusion matrix for the specific numbers):
 
 ---
 
-### Writing tips
-- No code or variable names in the report — describe concepts, not syntax
+### Writing rules
+- No code or variable names in the report — describe concepts only
 - Every table and figure must be referenced in the text before it appears
-- Methodology = what you did and why you chose it. Results = what happened. Discussion = why
-- Write Discussion as you go — after each experiment, note one sentence explaining the result
+- Methodology = what you did and why. Results = what happened. Discussion = why it happened.
 - Introduction and Conclusion are written last
-- Teammate writes Task 1 portions of each section; you write Task 2 portions — combine into one document
+- Person A sends their drafted paragraphs to Person B → B slots in Task 2 paragraphs → both finalise §4D, §1, §5 together
 
 ---
 
-## Division of Work (suggested)
+## Division of Work
 
 | Task | Person |
 |------|--------|
-| Data loading & exploration | Both |
-| Feature engineering (basic) | Person A |
-| Feature engineering (ResNet) | Person B |
-| Task 1 models | Person A |
-| Task 2 models | Person B |
-| Error analysis | Both |
-| Report writing | Both |
+| Feature engineering (provided + pixel stats) | ✏️ A |
+| Feature engineering (ResNet-50 extraction) | 📝 B |
+| Task 1 models + Kaggle submission | ✏️ A |
+| Task 2 models + ensemble + Kaggle submission | 📝 B |
+| Error analysis (confusion matrices, both tasks) | 🤝 Both |
+| §2.1–§4C Task 1 paragraphs | ✏️ A |
+| §2.1–§4C Task 2 paragraphs | 📝 B |
+| §4D, §1, §5 | 🤝 Both |
 
 ---
 
